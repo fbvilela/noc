@@ -22,7 +22,7 @@ get '/' do
 end
 
 get '/test' do
-  @contacts = Tidyhqrb::Client.new.contacts.all(access_token: session[:access_token])
+  @contacts = Tidyhq::Client.new.contacts.all
   erb :test
 end
 
@@ -35,7 +35,7 @@ get '/callback' do
   session[:access_token] = access_token.token
   @message = "Successfully authenticated with the server"
   @access_token = session[:access_token]
-
+  Tidyhq::Client.auth_token = @access_token
   erb :success
 end
 
