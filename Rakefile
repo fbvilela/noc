@@ -36,12 +36,9 @@ task :email_orders, [:to, :from, :category_id, :created_since] do |t, args|
     to: args[:to],
     from: args[:from],
     subject: "Orders #{Time.now}",
+    body: "Orders for category #{category_id} since created_since"
     attachments: {
       "orders-#{category_id}-#{created_since}.csv" => orders_csv(category_id, created_since)
-    },
-    headers: {
-      "Content-Type" => "multipart/mixed",
-      "Content-Disposition" => "attachment"
     }
   })
 
