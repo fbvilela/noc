@@ -13,7 +13,7 @@ class App < Sinatra::Base
 
   before do
     session[:token] = params[:token] if params[:token]
-    halt 401, "Not authorized\n" if TOKEN.nil? || session[:token] != TOKEN
+    halt 401, "Not authorized\n" if TOKEN.nil? || TOKEN.empty? || session[:token] != TOKEN
   end
 
   get '/logout' do
@@ -22,7 +22,7 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    redirect '/success' unless ENV['TIDYHQ_ACCESS_CODE'].nil?
+    redirect '/success' unless ENV['TIDYHQ_ACCESS_CODE'].nil? || ENV['TIDYHQ_ACCESS_CODE'].empty?
     erb :index
   end
 
