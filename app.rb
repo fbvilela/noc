@@ -41,45 +41,53 @@ get '/products.json' do
   tidyhq.products.all.to_json
 end
 
-get '/products/:product_id.json' do
+get '/products/:category_id.json' do
   content_type :json
-  tidyhq.products.get(params['product_id']).to_json
+  tidyhq.products.all.select do |product|
+    product.sell_category_id === params['category_id'].to_i
+  end.to_json
 end
 
-get '/products/:product_id/orders.json' do
+get '/products/:category_id/orders.json' do
   content_type :json
-
+  products = tidyhq.products.all
   orders = tidyhq.orders.all(created_since: params['created_since'])
   orders.select do |order|
-    order.products.any? do |product|
-      product.product_id === params['product_id']
+    order.products.any? do |product_order|
+      product = products.find {|prod| prod.id === product_order.product_id }
+      product.sell_category_id === params['category_id'].to_i
     end
   end.to_json
 end
 
-get '/products/:product_id/orders.csv' do
+get '/products/:category_id/orders.csv' do
   content_type 'application/csv'
-  attachment "orders-#{params['product_id']}-#{params['created_since']}.csv"
+  attachment "orders-#{params['category_id']}-#{params['created_since']}.csv"
 
-  product_name = tidyhq.products.get(params['product_id']).name
+  products = tidyhq.products.all
   orders = tidyhq.orders.all(created_since: params['created_since'])
   contacts = tidyhq.contacts.all
 
   CSV.generate do |csv|
     csv << ["Order Number", "Placed On", "Name", "Phone", "Email", "Items"]
     orders.each do |order|
-      order.products.each do |product|
-        if (product.product_id === params['product_id'])
-          contact = contacts.find {|c| c.id === order.contact_id }
-          csv << [
-            order.number,
-            order.created_at,
-            "#{contact.first_name} #{contact.last_name}",
-            contact.phone_number,
-            contact.email_address,
-            "#{product_name} (#{product.quantity})"
-          ]
+      product_orders = []
+      order.products.each do |product_order|
+        product = products.find {|prod| prod.id === product_order.product_id }
+        if (product.sell_category_id === params['category_id'].to_i)
+          product_orders << "#{product.name} (#{product_order.quantity})"
         end
+      end
+      unless product_orders.empty?
+        contact = contacts.find {|c| c.id === order.contact_id }
+        csv << [
+          order.number,
+          order.created_at,
+          "#{contact.first_name} #{contact.last_name}",
+          contact.phone_number,
+          contact.email_address,
+          product_orders.join('; ')
+        ]
       end
     end
   end
