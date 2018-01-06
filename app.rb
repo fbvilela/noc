@@ -22,8 +22,11 @@ class App < Sinatra::Base
   end
 
   get '/' do
-    redirect '/success' unless ENV['TIDYHQ_ACCESS_CODE'].nil? || ENV['TIDYHQ_ACCESS_CODE'].empty?
-    erb :index
+    if ENV['TIDYHQ_ACCESS_CODE'].nil? || ENV['TIDYHQ_ACCESS_CODE'].empty?
+      erb :index
+    else
+      erb :success
+    end
   end
 
   get "/auth" do
@@ -32,11 +35,8 @@ class App < Sinatra::Base
 
   get '/callback' do
     access_token = oauth_client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
+    @access_token = access_token.token
     ENV['TIDYHQ_ACCESS_CODE'] = access_token.token
-    redirect '/success'
-  end
-
-  get '/success' do
     erb :success
   end
 
