@@ -2,7 +2,7 @@ require 'sinatra'
 require 'oauth2'
 require 'json'
 require 'tidyhqrb'
-
+require 'csv'
 
 enable :sessions
 
@@ -26,9 +26,63 @@ get '/' do
   erb :index
 end
 
+get '/contacts.json' do
+  content_type :json
+  tidyhq.contacts.all.to_json
+end
+
+get '/orders.json' do
+  content_type :json
+  tidyhq.orders.all.to_json
+end
+
 get '/products.json' do
   content_type :json
   tidyhq.products.all.to_json
+end
+
+get '/products/:product_id.json' do
+  content_type :json
+  tidyhq.products.get(params['product_id']).to_json
+end
+
+get '/products/:product_id/orders.json' do
+  content_type :json
+
+  orders = tidyhq.orders.all(created_since: params['created_since'])
+  orders.select do |order|
+    order.products.any? do |product|
+      product.product_id === params['product_id']
+    end
+  end.to_json
+end
+
+get '/products/:product_id/orders.csv' do
+  content_type 'application/csv'
+  attachment "orders-#{params['product_id']}-#{params['created_since']}.csv"
+
+  product_name = tidyhq.products.get(params['product_id']).name
+  orders = tidyhq.orders.all(created_since: params['created_since'])
+  contacts = tidyhq.contacts.all
+
+  CSV.generate do |csv|
+    csv << ["Order Number", "Placed On", "Name", "Phone", "Email", "Items"]
+    orders.each do |order|
+      order.products.each do |product|
+        if (product.product_id === params['product_id'])
+          contact = contacts.find {|c| c.id === order.contact_id }
+          csv << [
+            order.number,
+            order.created_at,
+            "#{contact.first_name} #{contact.last_name}",
+            contact.phone_number,
+            contact.email_address,
+            "#{product_name} (#{product.quantity})"
+          ]
+        end
+      end
+    end
+  end
 end
 
 get "/auth" do
