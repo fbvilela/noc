@@ -1,8 +1,8 @@
 require 'sinatra'
 require 'oauth2'
 require 'json'
-require 'tidyhqrb'
-require 'csv'
+require_relative 'lib/tidyhq'
+require_relative 'lib/csv_generator'
 
 CLIENT = ENV['TIDYHQ_CLIENT']
 SECRET = ENV['TIDYHQ_SECRET']
@@ -78,33 +78,7 @@ class App < Sinatra::Base
     content_type 'application/csv'
     attachment "orders-#{params['category_id']}-#{params['created_since']}.csv"
 
-    products = tidyhq.products.all
-    orders = tidyhq.orders.all(created_since: params['created_since'])
-    contacts = tidyhq.contacts.all
-
-    CSV.generate do |csv|
-      csv << ["Order Number", "Placed On", "Name", "Phone", "Email", "Items"]
-      orders.each do |order|
-        product_orders = []
-        order.products.each do |product_order|
-          product = products.find {|prod| prod.id === product_order.product_id }
-          if (product.sell_category_id === params['category_id'].to_i)
-            product_orders << "#{product.name} (#{product_order.quantity})"
-          end
-        end
-        unless product_orders.empty?
-          contact = contacts.find {|c| c.id === order.contact_id }
-          csv << [
-            order.number,
-            order.created_at,
-            "#{contact.first_name} #{contact.last_name}",
-            contact.phone_number,
-            contact.email_address,
-            product_orders.join('; ')
-          ]
-        end
-      end
-    end
+    CsvGenerator.new(tidyhq).generate(params['category_id'].to_i, params['created_since'])
   end
 
   private
@@ -118,8 +92,7 @@ class App < Sinatra::Base
   end
 
   def tidyhq
-    Tidyhqrb::Client.auth_token = ENV['TIDYHQ_ACCESS_CODE'] unless ENV['TIDYHQ_ACCESS_CODE'].nil?
-    tidyhq_client ||= Tidyhqrb::Client.new
+    Tidyhq.client
   end
 
   def redirect_uri
