@@ -17,8 +17,8 @@ task :email_orders, [:to, :from] do |t, args|
       address: 'smtp.sendgrid.net',
       port: 25,
       authentication: :plain,
-      user_name: ENV['SENDGRID_USERNAME'],
-      password: ENV['SENDGRID_PASSWORD']
+      user_name: ENV['SENDGRID_API_USER'],
+      password: ENV['SENDGRID_API_KEY'],
       domain: ENV['DOMAIN']
     }
   })
