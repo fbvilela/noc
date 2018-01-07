@@ -24,7 +24,7 @@ class CsvGenerator
           contact = contacts.find {|c| c.id === order.contact_id }
           csv << [
             order.number,
-            order.created_at,
+            order.created_at.strftime("%Y-%m-%d %I:%M %p"),
             "#{contact.first_name} #{contact.last_name}",
             contact.phone_number,
             contact.email_address,
