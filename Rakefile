@@ -42,7 +42,7 @@ task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
   Pony.mail({
     to: args[:to],
     from: args[:from],
-    subject: "Orders #{Time.now}",
+    subject: "#{category_name} - Order sheet #{created_since.strftime("%Y-%m-%d")}",
     body: "#{category_name} orders since #{created_since.strftime("%B %d, %Y %I:%M %p")}",
     attachments: {
       "orders-#{category_id}-#{created_since}.csv" => orders_csv(category_id, created_since.to_s)
