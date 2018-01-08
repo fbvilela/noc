@@ -21,14 +21,14 @@ class CsvGenerator
     csv_data[:summary] = CSV.generate do |csv|
       total_qty = 0
       total_price = 0.0
-      csv << ["Product", "Qty", "Price", "Total"]
+      csv << ["Product", "Qty", "Unit Price", "Total cost"]
       orders_data[:summary].each do |key, value|
         total_qty += value[:qty]
         subtotal_price = value[:qty] * value[:price]
         total_price += subtotal_price
         csv << [key, value[:qty], value[:price], subtotal_price]
       end
-      csv << ["Total", total_qty, total_price]
+      csv << ["Total", total_qty, "", total_price]
     end
 
     csv_data
@@ -66,7 +66,8 @@ class CsvGenerator
             contact.phone_number,
             contact.email_address,
             product.name,
-            product_order.quantity
+            product_order.quantity,
+            product.sell_price
           ]
         end
       end
