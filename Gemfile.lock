@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fbvilela/tidyhqrb.git
-  revision: 8a9b32411779a5bc66eeefe158f06ffcc525de49
+  revision: 65f33390a5d2c6aa8a1d466096b698cc33eb3aa7
   specs:
     tidyhqrb (0.1.0)
       faraday (= 0.9.0)

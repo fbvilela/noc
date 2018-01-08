@@ -14,14 +14,21 @@ class CsvGenerator
     csv_data = {}
 
     csv_data[:list] = CSV.generate do |csv|
-      csv << ["Order Number", "Placed On", "Name", "Phone", "Email", "Item", "Qty"]
+      csv << ["Order Number", "Placed On", "Name", "Phone", "Email", "Item", "Qty", "Price"]
       orders_data[:list].each {|order| csv << order }
     end
 
     csv_data[:summary] = CSV.generate do |csv|
-      csv << ["Product", "Qty"]
-      orders_data[:summary].each {|key, value| csv << [key, value] }
-      csv << ["Total", orders_data[:summary].values.reduce(:+)]
+      total_qty = 0
+      total_price = 0.0
+      csv << ["Product", "Qty", "Price", "Total"]
+      orders_data[:summary].each do |key, value|
+        total_qty += value[:qty]
+        subtotal_price = value[:qty] * value[:price]
+        total_price += subtotal_price
+        csv << [key, value[:qty], value[:price], subtotal_price]
+      end
+      csv << ["Total", total_qty, total_price]
     end
 
     csv_data
@@ -42,7 +49,7 @@ class CsvGenerator
   def format_orders_data(products, orders, contacts)
     list = []
     summary = products.reduce({}) do |memo, product|
-      memo[product.name] = 0
+      memo[product.name] = { qty: 0, price: product.sell_price }
       memo
     end
 
@@ -51,7 +58,7 @@ class CsvGenerator
       order.products.each do |product_order|
         product = products.find {|prod| prod.id === product_order.product_id }
         unless (product.nil?)
-          summary[product.name] += product_order.quantity
+          summary[product.name][:qty] += product_order.quantity
           list << [
             order.number,
             order.created_at.strftime("%Y-%m-%d %I:%M %p"),
