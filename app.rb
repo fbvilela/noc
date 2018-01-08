@@ -74,11 +74,12 @@ class App < Sinatra::Base
     end.to_json
   end
 
-  get '/products/:category_id/orders.csv' do
+  get '/products/:category_id/orders/:type.csv' do
+    halt(404) unless params['type'] == 'list' || params['type'] == 'summary'
+
     content_type 'application/csv'
     attachment "orders-#{params['category_id']}-#{params['created_since']}.csv"
-
-    CsvGenerator.new(tidyhq).generate(params['category_id'].to_i, params['created_since'])
+    CsvGenerator.new(tidyhq).generate(params['category_id'].to_i, params['created_since'])[params['type'].to_sym]
   end
 
   private
