@@ -3,12 +3,26 @@ require 'date'
 require_relative 'lib/tidyhq'
 require_relative 'lib/csv_generator'
 
-if ENV['RACK_ENV'] == 'development'
+ONE_WEEK = 7
+
+if ENV['RACK_ENV'] == 'production'
+  Pony.options ={
+    via: :smtp,
+    via_options: {
+      address: 'smtp.sendgrid.net',
+      port: 25,
+      authentication: :plain,
+      user_name: ENV['SENDGRID_API_USER'],
+      password: ENV['SENDGRID_API_KEY'],
+      domain: ENV['DOMAIN']
+    }
+  }
+else
   require 'dotenv'
   Dotenv.load
 end
 
-def orders_csv(category_id, created_since)
+def orders_csv_data(category_id, created_since)
   CsvGenerator.new(Tidyhq.client).generate(category_id, created_since)
 end
 
@@ -21,31 +35,20 @@ task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
   puts "Emailing orders to #{args[:to]} from #{args[:from]}"
 
   category_id = args[:category_id].to_i
-  created_since = DateTime.now - 7
+  created_since = DateTime.now - ONE_WEEK
   # Endpoint to get a single category is not available
   category_name = Tidyhq.client.categories.all.find {|c| c.id == category_id}.name
 
-  if ENV['RACK_ENV'] == 'production'
-    Pony.options ={
-      via: :smtp,
-      via_options: {
-        address: 'smtp.sendgrid.net',
-        port: 25,
-        authentication: :plain,
-        user_name: ENV['SENDGRID_API_USER'],
-        password: ENV['SENDGRID_API_KEY'],
-        domain: ENV['DOMAIN']
-      }
-    }
-  end
+  csv_data = orders_csv_data(category_id, created_since.to_s)
 
   Pony.mail({
     to: args[:to],
     from: args[:from],
-    subject: "#{category_name} - Order sheet #{created_since.strftime("%Y-%m-%d")}",
-    body: "#{category_name} orders since #{created_since.strftime("%B %d, %Y %I:%M %p")}",
+    subject: "#{category_name} - Orders since #{created_since.strftime("%Y-%m-%d")}",
+    body: "#{category_name} - Orders since #{created_since.strftime("%B %d, %Y %I:%M %p")}",
     attachments: {
-      "orders-#{category_id}-#{created_since}.csv" => orders_csv(category_id, created_since.to_s)
+      "orders-#{category_id}-#{created_since}.csv" => csv_data[:list],
+      "summary-#{category_id}-#{created_since}.csv" => csv_data[:summary]
     }
   })
 
