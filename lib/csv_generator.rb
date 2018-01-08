@@ -20,7 +20,7 @@ class CsvGenerator
 
     csv_data[:summary] = CSV.generate do |csv|
       csv << ["Product", "Qty"]
-      csv << orders_data[:summary].flatten
+      orders_data[:summary].each {|key, value| csv << [key, value] }
       csv << ["Total", orders_data[:summary].values.reduce(:+)]
     end
 
