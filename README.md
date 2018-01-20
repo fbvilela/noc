@@ -8,10 +8,11 @@ Sends an email with CSV files attached listing orders and a summary for a week. 
 1. `cp .env.example .env`
 1. Create a new application in https://dev.tidyhq.com/oauth_applications, with Redirect uri being http://DOMAIN:PORT/callback. 
 1. Copy Client ID and Client Secret into [.env](https://github.com/fbvilela/noc/blob/master/.env.example).
-1. Generate a [random string](https://stackoverflow.com/questions/88311/how-to-generate-a-random-string-in-ruby) and copy into TOKEN in [.env](https://github.com/fbvilela/noc/blob/master/.env.example).
+1. Generate a [random string](https://stackoverflow.com/questions/88311/how-to-generate-a-random-string-in-ruby) and paste into TOKEN in [.env](https://github.com/fbvilela/noc/blob/master/.env.example).
 1. `bundle exec rackup`
 1. Go to http://DOMAIN:PORT/?token=TOKEN (token will be saved on your session, you can go to http://DOMAIN:PORT/logout to clear the session)
 1. Click on `Auth` and authorize the application with TidyHQ.
+1. Copy the access token shown next to the success message and paste into TIDYHQ_ACCESS_CODE in [.env](https://github.com/fbvilela/noc/blob/master/.env.example), then restart the application.
 1. Verify you can now access orders at https://newportorganiccollective.herokuapp.com/orders.json.
 
 ## Usage
