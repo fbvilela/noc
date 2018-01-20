@@ -45,6 +45,36 @@ class App < Sinatra::Base
     tidyhq.contacts.all.to_json
   end
 
+  get '/groups.json' do
+    content_type :json
+    tidyhq.groups.all.to_json
+  end
+
+  get '/groups/:id.json' do
+    content_type :json
+    tidyhq.groups.get(params['id'].to_i).to_json
+  end
+
+  get '/groups/:id/contacts.json' do
+    content_type :json
+    tidyhq.groups.get(params['id'].to_i).contacts.all.to_json
+  end
+
+  get '/memberships.json' do
+    content_type :json
+    tidyhq.memberships.all.to_json
+  end
+
+  get '/membership_levels.json' do
+    content_type :json
+    tidyhq.membership_levels.all.to_json
+  end
+
+  get '/membership_levels/:id/memberships.json' do
+    content_type :json
+    tidyhq.membership_levels.get(params[:id]).memberships.all.to_json
+  end
+
   get '/orders.json' do
     content_type :json
     tidyhq.orders.all.to_json

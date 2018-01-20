@@ -26,7 +26,7 @@ def orders_csv_data(category_id, created_since)
   CsvGenerator.new(Tidyhq.client).generate(category_id, created_since)
 end
 
-desc "This task is called by the Heroku scheduler add-on"
+desc "This task is called by the Heroku scheduler add-on to email orders"
 task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
   unless Date.today.strftime("%A").downcase == args[:cutoff_day].downcase
     abort("Skipping task until #{args[:cutoff_day]}")
@@ -53,4 +53,22 @@ task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
   })
 
   puts "done."
+end
+
+desc "This task is called by the Heroku scheduler add-on to delete expired memberships from group"
+task :delete_expired, [:membership_level_id, :group_id] do |t, args|
+  membership_level_id = args[:membership_level_id].to_i
+  group_id = args[:group_id].to_i
+  active_memberships = Tidyhq.client.membership_levels
+                                    .get(membership_level_id)
+                                    .memberships
+                                    .all(active: true)
+                                    .map(&:contact_id)
+
+  group_contacts = Tidyhq.client.groups.get(group_id).contacts.all.map(&:id)
+  group_contacts_without_active_memberships = (group_contacts - active_memberships).select do |contact_id|
+    # Make sure contact is not part of any active membership
+    Tidyhq.client.contacts.get(contact_id).memberships.all(active: true).empty?
+  end
+  puts "group_contacts_without_active_memberships", group_contacts_without_active_memberships.join(', ')
 end
