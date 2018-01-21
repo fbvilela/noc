@@ -55,7 +55,7 @@ task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
   puts "done."
 end
 
-desc "This task is called by the Heroku scheduler add-on to delete expired memberships from group"
+desc "This task is called by the Heroku scheduler add-on to delete expired memberships from a group"
 task :delete_expired, [:membership_level_id, :group_id] do |t, args|
   membership_level_id = args[:membership_level_id].to_i
   group_id = args[:group_id].to_i
@@ -65,10 +65,14 @@ task :delete_expired, [:membership_level_id, :group_id] do |t, args|
                                     .all(active: true)
                                     .map(&:contact_id)
 
-  group_contacts = Tidyhq.client.groups.get(group_id).contacts.all.map(&:id)
-  group_contacts_without_active_memberships = (group_contacts - active_memberships).select do |contact_id|
-    # Make sure contact is not part of any active membership
-    Tidyhq.client.contacts.get(contact_id).memberships.all(active: true).empty?
+  group = Tidyhq.client.groups.get(group_id)
+  group_contacts = group.contacts.all.map(&:id)
+  (group_contacts - active_memberships).each do |contact_id|
+    contact = Tidyhq.client.contacts.get(contact_id)
+    # Make sure contact isn't part of any active membership
+    if contact.memberships.all(active: true).empty?
+      puts "Deleting #{contact.first_name} #{contact.last_name} from group #{group.label}"
+      group.contacts.delete(contact_id)
+    end
   end
-  puts "group_contacts_without_active_memberships", group_contacts_without_active_memberships.join(', ')
 end
