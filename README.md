@@ -25,3 +25,9 @@ bundle exec rake email_orders[to_email,from_email,category_id,day_to_run]
 - `from_email`: email that order sheets will be sent from
 - `category_id`: category used to select orders
 - `day_to_run`: rake task is skipped unless the day of the week matches this (used because heroku does not support a weekly schedulers)
+
+```
+bundle exec rake delete_expired[group_id]
+```
+
+- `group_id`: id of the group to remove expired members from
