@@ -62,7 +62,7 @@ class App < Sinatra::Base
 
   get '/memberships.json' do
     content_type :json
-    tidyhq.memberships.all.to_json
+    tidyhq.memberships.all(params).to_json
   end
 
   get '/membership_levels.json' do

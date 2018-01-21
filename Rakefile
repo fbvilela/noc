@@ -56,12 +56,9 @@ task :email_orders, [:to, :from, :category_id, :cutoff_day] do |t, args|
 end
 
 desc "This task is called by the Heroku scheduler add-on to delete expired memberships from a group"
-task :delete_expired, [:membership_level_id, :group_id] do |t, args|
-  membership_level_id = args[:membership_level_id].to_i
+task :delete_expired, [:group_id] do |t, args|
   group_id = args[:group_id].to_i
-  active_memberships = Tidyhq.client.membership_levels
-                                    .get(membership_level_id)
-                                    .memberships
+  active_memberships = Tidyhq.client.memberships
                                     .all(active: true)
                                     .map(&:contact_id)
 

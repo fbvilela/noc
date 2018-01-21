@@ -10,6 +10,11 @@ gem 'faraday', '0.9.0'
 gem 'rake'
 gem 'pony'
 
+group :test do
+  gem 'rspec'
+  gem 'webmock'
+end
+
 group :development do
   gem 'dotenv'
   gem 'byebug'
