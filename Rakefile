@@ -2,6 +2,10 @@ require 'pony'
 require 'date'
 require_relative 'lib/tidyhq'
 require_relative 'lib/csv_generator'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+task :default => :spec
 
 ONE_WEEK = 7
 
