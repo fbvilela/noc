@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fbvilela/noc.svg?branch=master)](https://travis-ci.org/fbvilela/noc)
+
 # Newport Organic Collective
 
 Sends an email with CSV files attached listing orders and a summary for a week. Designed to be used with Sendgrid and Heroku scheduler.
