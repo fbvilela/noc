@@ -15,7 +15,7 @@ Sends an email with CSV files attached listing orders and a summary for a week. 
 1. Go to http://DOMAIN:PORT/?token=TOKEN (token will be saved on your session, you can go to http://DOMAIN:PORT/logout to clear the session)
 1. Click on "Auth" and authorize the application with TidyHQ.
 1. Copy the access token shown next to the success message and paste into `TIDYHQ_ACCESS_CODE` in [.env](https://github.com/fbvilela/noc/blob/master/.env.example), then restart the application.
-1. Verify you can now access orders at https://newportorganiccollective.herokuapp.com/orders.json.
+1. Verify you can now access orders at http://DOMAIN:PORT/orders.json.
 
 ## Usage
 
