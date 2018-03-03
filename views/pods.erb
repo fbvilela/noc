@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map" style="position: initial;"></div>
+    <script>
+      (function(exports) {
+        var contacts = <%= @contacts %>;
+
+        exports.initMap = function() {
+          var LFK = { lat: -37.8500689, lng: 144.8756515 };
+
+          var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 13,
+            center: LFK
+          });
+
+          var geocoder = new google.maps.Geocoder();
+
+          function geocodeAddress(address, callback) {
+            geocoder.geocode({'address': address}, function(results, status) {
+              if (status === 'OK') {
+                callback(results[0].geometry.location);
+              } else {
+                console.log('Geocode was not successful for the following reason: ' + status);
+              }
+            });
+          }
+
+          function placeMarker(contact, address, position, icon) {
+            var contactName = contact.first_name + ' ' + contact.last_name;
+            var opts = {
+              title: contact.first_name + ' ' + contact.last_name,
+              map: map,
+              place: {
+                location: position,
+                query: address
+              }
+            };
+
+            if (icon) {
+              opts.icon = icon;
+            }
+
+            var marker = new google.maps.Marker(opts);
+
+            var contentString = '<div id="content"></div>' +
+             '<p><strong>' + contactName + '</strong></p>' +
+             '<p><a href="mailto:' + contact.email_address + '">' + contact.email_address + '</a></p>' +
+             '<p>' + address + '</p></div>';
+
+            var infoWindow = new google.maps.InfoWindow({ content: contentString });
+            marker.addListener('click', function() {
+              infoWindow.open(map, marker);
+            });
+          }
+
+          function placeMarkers(contacts) {
+            var contact = contacts.pop();
+
+            var address = [
+              contact.address1,
+              contact.city,
+              contact.state,
+              contact.postcode
+            ].join(', ');
+
+            var position;
+
+            try {
+              position = JSON.parse(localStorage.getItem(contact.id));
+            } catch (e) {
+              console.log("Failed to parse position:", contact.id);
+              console.error && console.error(e);
+            }
+
+            if (position) {
+              placeMarker(contact, address, position);
+              placeMarkers(contacts);
+            } else {
+              setTimeout(geocodeAddress.bind(null, address, function(position) {
+                localStorage.setItem(contact.id, JSON.stringify(position));
+                placeMarker(contact, address, position);
+
+                placeMarkers(contacts);
+              }), 1000);
+            }
+          }
+
+          placeMarker({
+            first_name: "Lifestyle",
+            last_name: "for Kids",
+            email_address: "lifestyleforkids193@icloud.com",
+          }, "193 Champion Rd, Williamstown North VIC 3016", LFK, {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 5
+          });
+
+          placeMarkers(contacts);
+        };
+      }(this));
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXrGBYPLVkR2vQ9wliTc97m3P_D98ArAs&callback=initMap">
+    </script>
+  </body>
+</html>

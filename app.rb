@@ -40,6 +40,11 @@ class App < Sinatra::Base
     erb :success
   end
 
+  get '/groups/:id/pods' do
+    @contacts = tidyhq.groups.get(params['id'].to_i).contacts.all.to_json
+    erb :pods
+  end
+
   get '/groups/:id/contacts' do
     @contacts = tidyhq.groups.get(params['id'].to_i).contacts.all
     erb :contacts
