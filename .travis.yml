@@ -1,5 +1,5 @@
 language: ruby
 rvm:
- - 2.3
+ - 2.3.1
 env:
  - TIDYHQ_ACCESS_CODE=1a2b3c4d
