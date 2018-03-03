@@ -2,14 +2,11 @@ require 'pony'
 require 'date'
 require_relative 'lib/tidyhq'
 require_relative 'lib/csv_generator'
-require 'rspec/core/rake_task'
-
-RSpec::Core::RakeTask.new(:spec)
-task :default => :spec
 
 ONE_WEEK = 7
 
-if ENV['RACK_ENV'] == 'production'
+case ENV['RACK_ENV']
+when 'production'
   Pony.options ={
     via: :smtp,
     via_options: {
@@ -21,7 +18,12 @@ if ENV['RACK_ENV'] == 'production'
       domain: ENV['DOMAIN']
     }
   }
-else
+when 'test'
+  require 'rspec/core/rake_task'
+
+  RSpec::Core::RakeTask.new(:spec)
+  task :default => :spec
+when 'development'
   require 'dotenv'
   Dotenv.load
 end
