@@ -60,6 +60,11 @@ class App < Sinatra::Base
     tidyhq.groups.get(params['id'].to_i).contacts.all.to_json
   end
 
+  get '/groups/:id/contacts' do
+    @contacts = tidyhq.groups.get(params['id'].to_i).contacts.all
+    erb :contacts
+  end
+
   get '/memberships.json' do
     content_type :json
     tidyhq.memberships.all(params).to_json
