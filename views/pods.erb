@@ -32,12 +32,13 @@
 
           var geocoder = new google.maps.Geocoder();
 
-          function geocodeAddress(address, callback) {
+          function geocodeAddress(address, success, fail) {
             geocoder.geocode({'address': address}, function(results, status) {
               if (status === 'OK') {
-                callback(results[0].geometry.location);
+                success(results[0].geometry.location);
               } else {
                 console.log('Geocode was not successful for the following reason: ' + status);
+                fail();
               }
             });
           }
@@ -73,6 +74,8 @@
           function placeMarkers(contacts) {
             var contact = contacts.pop();
 
+            if (!contact) { return; }
+
             var address = [
               contact.address1,
               contact.city,
@@ -93,12 +96,15 @@
               placeMarker(contact, address, position);
               placeMarkers(contacts);
             } else {
-              setTimeout(geocodeAddress.bind(null, address, function(position) {
+              var success = function(position) {
                 localStorage.setItem(contact.id, JSON.stringify(position));
                 placeMarker(contact, address, position);
 
                 placeMarkers(contacts);
-              }), 1000);
+              };
+
+              var fail = placeMarkers.bind(null, contacts);
+              setTimeout(geocodeAddress.bind(null, address, success, fail), 1000);
             }
           }
 
